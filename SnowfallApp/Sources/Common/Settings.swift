@@ -2,7 +2,7 @@ import Foundation
 
 enum DisplayMode: String, CaseIterable, Codable {
     case allMonitors = "На всех мониторах"
-    case mainMonitorOnly = "Только на главном"
+    case selected = "На выбранных мониторах"
 }
 
 enum SnowPreset: String, CaseIterable, Codable {
@@ -18,6 +18,7 @@ final class Settings: Codable {
     var currentPreset: SnowPreset = .comfort
     var isPaused: Bool = false
     var displayMode: DisplayMode = .allMonitors
+    var selectedMonitors: Set<String> = []
     var pauseInFullscreen: Bool = true
     var snowflakeSizeRange: ClosedRange<Float> = 3...10
     var maxSnowflakes = 2000
@@ -66,6 +67,7 @@ final class Settings: Codable {
         windStrength = settings.windStrength
         meltingSpeed = settings.meltingSpeed
         windowInteraction = settings.windowInteraction
+        selectedMonitors = settings.selectedMonitors
     }
 }
 

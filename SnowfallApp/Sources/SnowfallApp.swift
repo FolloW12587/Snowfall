@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupSnowWindows()
         NotificationCenter.default.addObserver(self, selector: #selector(setupSnowWindows), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(setupSnowWindows), name: .screenSettingsDidChange, object: nil)
     }
     
     @objc private func setupSnowWindows() {
@@ -28,17 +29,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         var maxX = CGFloat.leastNormalMagnitude
         var maxY = CGFloat.leastNormalMagnitude
+        var screens: [NSScreen] = []
         
         for screen in NSScreen.screens {
             let f = screen.frame
 
             maxX = max(maxX, f.maxX)
             maxY = max(maxY, f.maxY)
+            
+            guard Settings.shared.displayMode == .allMonitors || Settings.shared.selectedMonitors.contains(screen.localizedName) else { continue }
+            screens.append(screen)
         }
         
         let globalRect = CGRect(x: 0, y: 0, width: maxX, height: maxY)
         
-        for screen in NSScreen.screens {
+        for screen in screens {
             createSnowWindow(for: screen, in: globalRect)
         }
     }
@@ -64,4 +69,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         snowWindows.append(window)
     }
+}
+
+extension Notification.Name {
+    static let screenSettingsDidChange = Notification.Name("screenSettingsDidChange")
 }

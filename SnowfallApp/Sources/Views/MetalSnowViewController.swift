@@ -52,4 +52,8 @@ class MetalSnowViewController: NSViewController {
         let point = simd_float2(Float(location.x), Float(invertedY))
         renderer.mousePosition = point
     }
+    
+    override func mouseExited(with event: NSEvent) {
+        renderer.mousePosition = simd_float2(-100, -100)
+    }
 }

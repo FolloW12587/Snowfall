@@ -9,6 +9,10 @@ struct MenuBarSettings: View {
     @State private var maxSnowflakes: Float = Float(Settings.shared.maxSnowflakes)
     @State private var windowInteraction: Bool = Settings.shared.windowInteraction
     @State private var windStrength: Float = Settings.shared.windStrength * 100
+    @State private var displayMode: DisplayMode = Settings.shared.displayMode
+    @State private var selectedDisplays: Set<String> = Settings.shared.selectedMonitors
+    
+    @State private var allDisplays: [String] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -119,6 +123,26 @@ struct MenuBarSettings: View {
             Divider()
 
             Toggle("Взаимодействие с окнами", isOn: $windowInteraction)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Picker(selection: $displayMode, label: Text("Мониторы:")) {
+                    Text("Все").tag(DisplayMode.allMonitors)
+                    Text("Выбранные").tag(DisplayMode.selected)
+                }.pickerStyle(RadioGroupPickerStyle())
+                
+
+                if displayMode == .selected {
+                    ForEach(allDisplays, id: \.self) { display in
+                        Toggle(display, isOn: Binding(get: {selectedDisplays.contains(display)}, set: { _, _ in
+                            if selectedDisplays.contains(display) {
+                                selectedDisplays.remove(display)
+                            } else {
+                                selectedDisplays.insert(display)
+                            }
+                        }))
+                    }
+                }
+            }
 
             HStack {
                 Button("Сбросить") {
@@ -148,6 +172,14 @@ struct MenuBarSettings: View {
             Settings.shared.windowInteraction = val
             Settings.shared.save()
         }
+        .onChange(of: selectedDisplays) { _ in
+            updateSettings()
+            NotificationCenter.default.post(name: .screenSettingsDidChange, object: nil)
+        }
+        .onChange(of: displayMode) { _ in
+            updateSettings()
+            NotificationCenter.default.post(name: .screenSettingsDidChange, object: nil)
+        }
         .onAppear {
             loadValues()
         }
@@ -175,6 +207,8 @@ struct MenuBarSettings: View {
         Settings.shared.snowflakeSizeRange = minSize...maxSize
         Settings.shared.maxSnowflakes = Int(maxSnowflakes)
         Settings.shared.windStrength = windStrength / 100
+        Settings.shared.displayMode = displayMode
+        Settings.shared.selectedMonitors = selectedDisplays
         Settings.shared.save()
     }
 
@@ -188,5 +222,9 @@ struct MenuBarSettings: View {
         maxSnowflakes = Float(s.maxSnowflakes)
         windowInteraction = s.windowInteraction
         windStrength = s.windStrength * 100
+        displayMode = s.displayMode
+        selectedDisplays = selectedDisplays
+        
+        allDisplays = NSScreen.screens.map(\.localizedName)
     }
 }
