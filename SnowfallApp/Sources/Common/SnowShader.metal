@@ -66,12 +66,10 @@ kernel void updateSnowflakes(device Snowflake *snowflakes [[buffer(0)]],
     
     bool isOnWindow = false;
     if (uniforms.isWindowInteractionEnabled) {
-        if (flake.position.x >= uniforms.windowRect.x &&
+        isOnWindow = (flake.position.x >= uniforms.windowRect.x &&
             flake.position.x <= uniforms.windowRect.x + uniforms.windowRect.z &&
             flake.position.y >= uniforms.windowRect.y &&
-            flake.position.y <= uniforms.windowRect.y + uniforms.windowRect.w) {
-            isOnWindow = true;
-        }
+            flake.position.y <= uniforms.windowRect.y + uniforms.windowRect.w);
     }
     
     if (isOnWindow) {
@@ -88,30 +86,30 @@ kernel void updateSnowflakes(device Snowflake *snowflakes [[buffer(0)]],
             float sizeRange = uniforms.maxSize - uniforms.minSize;
             flake.size = uniforms.minSize + random(id + 1, uniforms.time) * sizeRange;
         }
-    } else {
-        flake.position += flake.velocity * timeFactor;
-        flake.position.x += (uniforms.windStrength * (flake.size * 0.05)) * timeFactor;
-        
-        float2 mouseDir = flake.position - uniforms.mousePosition;
-        float influenceRadius = 50.0;
-        float dist = length(mouseDir);
-        if (dist < influenceRadius) {
-            float force = (influenceRadius - dist) / influenceRadius;
-            flake.position += normalize(mouseDir) * force * 20.0 * timeFactor;
-        }
-        
-        if (flake.position.y > uniforms.screenSize.y + flake.size) {
-            flake.position.y = -flake.size;
-            float rnd = random(id, uniforms.time);
-            float widthSpread = uniforms.screenSize.x + 400.0;
-            flake.position.x = (rnd * widthSpread) - 200.0;
-        }
-        
-        if (flake.position.x > uniforms.screenSize.x + 200.0) {
-            flake.position.x = -100.0;
-        } else if (flake.position.x < -200.0) {
-            flake.position.x = uniforms.screenSize.x + 100.0;
-        }
+        return;
+    }
+    flake.position += flake.velocity * timeFactor;
+    flake.position.x += (uniforms.windStrength * (flake.size * 0.05)) * timeFactor;
+    
+    float2 mouseDir = flake.position - uniforms.mousePosition;
+    float influenceRadius = 50.0;
+    float dist = length(mouseDir);
+    if (dist < influenceRadius) {
+        float force = (influenceRadius - dist) / influenceRadius;
+        flake.position += normalize(mouseDir) * force * 20.0 * timeFactor;
+    }
+    
+    if (flake.position.y > uniforms.screenSize.y + flake.size) {
+        flake.position.y = -flake.size;
+        float rnd = random(id, uniforms.time);
+        float widthSpread = uniforms.screenSize.x + 400.0;
+        flake.position.x = (rnd * widthSpread) - 200.0;
+    }
+    
+    if (flake.position.x > uniforms.screenSize.x + 200.0) {
+        flake.position.x = -100.0;
+    } else if (flake.position.x < -200.0) {
+        flake.position.x = uniforms.screenSize.x + 100.0;
     }
 }
 

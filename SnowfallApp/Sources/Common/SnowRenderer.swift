@@ -155,7 +155,7 @@ final class SnowRenderer: NSObject {
     private func updateActiveWindowRect() {
         let currentTime = CACurrentMediaTime()
         if currentTime - lastWindowCheckTime > windowCheckInterval {
-            if Settings.shared.windowInteraction, let rect = WindowInfo().getActiveWindowRect() {
+            if Settings.shared.windowInteraction, let rect = WindowInfo().getActiveWindowRect(), screenRect.intersects(rect) {
                 cachedWindowRect = rect
             } else {
                 cachedWindowRect = CGRect(x: -1000, y: -1000, width: 0, height: 0)
